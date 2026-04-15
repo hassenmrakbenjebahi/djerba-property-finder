@@ -22,8 +22,17 @@ const quickActions = [
   "📞 Contacter l'agence",
 ];
 
-function getBotResponse(input: string): { text: string; properties?: Property[] } {
+function getBotResponse(input: string, allProperties: Property[]): { text: string; properties?: Property[] } {
   const lower = input.toLowerCase();
+
+  const search = (filters: { type?: string; zone?: string; maxPrice?: number }) => {
+    return allProperties.filter((p) => {
+      if (filters.type && p.type !== filters.type) return false;
+      if (filters.zone && p.zone !== filters.zone) return false;
+      if (filters.maxPrice && p.price > filters.maxPrice) return false;
+      return true;
+    });
+  };
 
   if (lower.includes("contacter") || lower.includes("contact") || lower.includes("téléphone") || lower.includes("appeler")) {
     return {
