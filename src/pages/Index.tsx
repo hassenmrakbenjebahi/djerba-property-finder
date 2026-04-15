@@ -106,12 +106,20 @@ const Index = () => {
         </div>
 
         {/* Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredProperties.map((p) => (
-            <PropertyCard key={p.id} property={p} />
-          ))}
-        </div>
-        {filteredProperties.length === 0 && (
+        {loading ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-card rounded-2xl border border-border h-80 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProperties.map((p) => (
+              <PropertyCard key={p.id} property={p} />
+            ))}
+          </div>
+        )}
+        {!loading && filteredProperties.length === 0 && (
           <p className="text-center text-muted-foreground py-8">Aucun bien trouvé pour cette catégorie.</p>
         )}
       </section>
