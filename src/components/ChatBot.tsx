@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PropertyCard from "./PropertyCard";
 import TypingIndicator from "./TypingIndicator";
-import { properties, searchProperties, formatPrice, Property } from "@/data/properties";
+import { Property, formatPrice } from "@/data/properties";
+import { useProperties } from "@/context/PropertyContext";
 
 interface Message {
   id: string;
@@ -36,7 +37,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
 
   if (lower.includes("contacter") || lower.includes("contact") || lower.includes("téléphone") || lower.includes("appeler")) {
     return {
-      text: "📞 Vous pouvez nous contacter :\n\n• **Téléphone** : +216 75 XXX XXX\n• **WhatsApp** : +216 XX XXX XXX\n• **Email** : contact@immodjerba.tn\n• **Adresse** : Houmt Souk, Djerba\n\nNos horaires : Lun-Sam 9h-18h. N'hésitez pas à nous appeler pour une visite gratuite ! 🏠",
+      text: "📞 Vous pouvez nous contacter :\n\n• **Téléphone** : +216 75 XXX XXX\n• **WhatsApp** : +216 XX XXX XXX\n• **Email** : contact@immorevdjerba.tn\n• **Adresse** : Houmt Souk, Djerba\n\nNos horaires : Lun-Sam 9h-18h. N'hésitez pas à nous appeler pour une visite gratuite ! 🏠",
     };
   }
 
@@ -47,7 +48,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("villa")) {
-    const results = searchProperties({ type: "villa" });
+    const results = search({ type: "villa" });
     return {
       text: `🏡 Voici nos **${results.length} villas** disponibles à Djerba. Des biens d'exception entre mer et tradition !`,
       properties: results,
@@ -55,7 +56,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("appartement")) {
-    const results = searchProperties({ type: "appartement" });
+    const results = search({ type: "appartement" });
     return {
       text: `🏢 Nous avons **${results.length} appartements** disponibles. Parfaits pour habiter ou investir !`,
       properties: results,
@@ -63,7 +64,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("terrain")) {
-    const results = searchProperties({ type: "terrain" });
+    const results = search({ type: "terrain" });
     return {
       text: `🌿 **${results.length} terrains** à saisir ! Construisez la maison de vos rêves à Djerba.`,
       properties: results,
@@ -71,7 +72,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("maison") || lower.includes("houch")) {
-    const results = searchProperties({ type: "maison" });
+    const results = search({ type: "maison" });
     return {
       text: `🏠 Découvrez nos **maisons traditionnelles** ! Le charme authentique de Djerba.`,
       properties: results,
@@ -79,7 +80,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("midoun")) {
-    const results = searchProperties({ zone: "Midoun" });
+    const results = search({ zone: "Midoun" });
     return {
       text: `📍 **Midoun** est la zone touristique par excellence ! Proche des plages et des hôtels. Voici nos biens :`,
       properties: results,
@@ -87,7 +88,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("houmt") || lower.includes("souk")) {
-    const results = searchProperties({ zone: "Houmt Souk" });
+    const results = search({ zone: "Houmt Souk" });
     return {
       text: `📍 **Houmt Souk**, le cœur historique de Djerba. Animé, culturel et authentique !`,
       properties: results,
@@ -95,7 +96,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("ajim")) {
-    const results = searchProperties({ zone: "Ajim" });
+    const results = search({ zone: "Ajim" });
     return {
       text: `📍 **Ajim**, le calme face à la mer. Idéal pour les amoureux de tranquillité.`,
       properties: results,
@@ -103,7 +104,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
   }
 
   if (lower.includes("budget") || lower.includes("300") || lower.includes("moins")) {
-    const results = searchProperties({ maxPrice: 300000 });
+    const results = search({ maxPrice: 300000 });
     return {
       text: `💰 Voici les biens sous **300 000 TND**. De belles opportunités à saisir !`,
       properties: results,
@@ -112,7 +113,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
 
   if (lower.includes("bonjour") || lower.includes("salut") || lower.includes("hello") || lower.includes("bonsoir")) {
     return {
-      text: "Bonjour et bienvenue chez **ImmoDjerba** ! 🌴\n\nJe suis votre assistant immobilier. Comment puis-je vous aider ?\n\n• Chercher un bien (villa, appartement, terrain)\n• Découvrir les zones de Djerba\n• Réserver une visite\n• Connaître les prix du marché",
+      text: "Bonjour et bienvenue chez **Immo Rêve Djerba** ! 🌴\n\nJe suis votre assistant immobilier. Comment puis-je vous aider ?\n\n• Chercher un bien (villa, appartement, terrain)\n• Découvrir les zones de Djerba\n• Réserver une visite\n• Connaître les prix du marché",
     };
   }
 
@@ -128,11 +129,12 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
 }
 
 const ChatBot = () => {
+  const { properties } = useProperties();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "bot",
-      text: "Bienvenue chez **ImmoDjerba** ! 🌴🏠\n\nJe suis votre assistant immobilier. Je peux vous aider à trouver le bien idéal à Djerba.\n\nQue recherchez-vous ?",
+      text: "Bienvenue chez **Immo Rêve Djerba** ! 🌴🏠\n\nJe suis votre assistant immobilier. Je peux vous aider à trouver le bien idéal à Djerba.\n\nQue recherchez-vous ?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -151,7 +153,7 @@ const ChatBot = () => {
     setIsTyping(true);
 
     setTimeout(() => {
-      const response = getBotResponse(text);
+      const response = getBotResponse(text, properties);
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "bot",
@@ -183,7 +185,7 @@ const ChatBot = () => {
           <Bot className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
-          <h3 className="font-semibold text-primary-foreground text-sm">Assistant ImmoDjerba</h3>
+          <h3 className="font-semibold text-primary-foreground text-sm">Assistant Immo Rêve Djerba</h3>
           <p className="text-primary-foreground/70 text-xs">En ligne • Réponse instantanée</p>
         </div>
       </div>
