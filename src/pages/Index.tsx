@@ -208,6 +208,8 @@ const Index = () => {
           </Link>
         </div>
       </footer>
+
+      <WhatsAppButton />
     </div>
   );
 };
