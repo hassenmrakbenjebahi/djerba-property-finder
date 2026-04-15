@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useProperties } from "@/context/PropertyContext";
-import { Property } from "@/data/properties";
-import { formatPrice } from "@/data/properties";
+import { useProperties, Property, formatPrice } from "@/context/PropertyContext";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,14 +9,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 const ADMIN_PASSWORD = "admin123";
 
-type PropertyForm = Omit<Property, "id">;
+type PropertyForm = {
+  title: string;
+  type: string;
+  zone: string;
+  price: number;
+  surface: number;
+  bedrooms?: number;
+  description: string;
+  features: string[];
+  image_url?: string;
+};
 
 const emptyForm: PropertyForm = {
   title: "",
@@ -28,6 +37,7 @@ const emptyForm: PropertyForm = {
   bedrooms: undefined,
   description: "",
   features: [],
+  image_url: "",
 };
 
 const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
@@ -55,13 +65,7 @@ const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(false); }}
-                placeholder="Entrez le mot de passe"
-              />
+              <Input id="password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} placeholder="Entrez le mot de passe" />
               {error && <p className="text-destructive text-xs mt-1">Mot de passe incorrect</p>}
             </div>
             <Button type="submit" className="w-full">Se connecter</Button>
@@ -118,7 +122,7 @@ const PropertyFormDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Type *</Label>
-              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Property["type"] })}>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="villa">Villa</SelectItem>
@@ -130,7 +134,7 @@ const PropertyFormDialog = ({
             </div>
             <div>
               <Label>Zone *</Label>
-              <Select value={form.zone} onValueChange={(v) => setForm({ ...form, zone: v as Property["zone"] })}>
+              <Select value={form.zone} onValueChange={(v) => setForm({ ...form, zone: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Midoun">Midoun</SelectItem>
@@ -152,6 +156,21 @@ const PropertyFormDialog = ({
             <div>
               <Label>Chambres</Label>
               <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
+            </div>
+          </div>
+          <div>
+            <Label>URL de l'image</Label>
+            <div className="flex gap-2">
+              <Input value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="flex-1" />
+              <div className="w-10 h-10 rounded-lg border border-border overflow-hidden shrink-0">
+                {form.image_url ? (
+                  <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Image className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div>
@@ -183,16 +202,57 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
     terrains: properties.filter((p) => p.type === "terrain").length,
   };
 
-  const handleDelete = (id: string, title: string) => {
+  const handleAdd = async (form: PropertyForm) => {
+    try {
+      await addProperty({
+        title: form.title,
+        type: form.type,
+        zone: form.zone,
+        price: form.price,
+        surface: form.surface,
+        bedrooms: form.bedrooms || null,
+        description: form.description,
+        features: form.features,
+        image_url: form.image_url || null,
+      });
+      toast({ title: "Ajouté", description: `"${form.title}" a été ajouté.` });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible d'ajouter le bien.", variant: "destructive" });
+    }
+  };
+
+  const handleUpdate = async (id: string, form: PropertyForm) => {
+    try {
+      await updateProperty(id, {
+        title: form.title,
+        type: form.type,
+        zone: form.zone,
+        price: form.price,
+        surface: form.surface,
+        bedrooms: form.bedrooms || null,
+        description: form.description,
+        features: form.features,
+        image_url: form.image_url || null,
+      });
+      toast({ title: "Modifié", description: `"${form.title}" a été mis à jour.` });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de modifier le bien.", variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: string, title: string) => {
     if (window.confirm(`Supprimer "${title}" ?`)) {
-      deleteProperty(id);
-      toast({ title: "Supprimé", description: `"${title}" a été supprimé.` });
+      try {
+        await deleteProperty(id);
+        toast({ title: "Supprimé", description: `"${title}" a été supprimé.` });
+      } catch {
+        toast({ title: "Erreur", description: "Impossible de supprimer.", variant: "destructive" });
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Admin Header */}
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -214,7 +274,6 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Total biens", value: stats.total, icon: Building },
@@ -236,20 +295,12 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
           ))}
         </div>
 
-        {/* Properties Table */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-heading text-lg">Gestion des biens</CardTitle>
             <PropertyFormDialog
-              onSave={(form) => {
-                addProperty(form);
-                toast({ title: "Ajouté", description: `"${form.title}" a été ajouté.` });
-              }}
-              trigger={
-                <Button size="sm">
-                  <Plus className="w-4 h-4 mr-1" /> Ajouter un bien
-                </Button>
-              }
+              onSave={handleAdd}
+              trigger={<Button size="sm"><Plus className="w-4 h-4 mr-1" /> Ajouter un bien</Button>}
             />
           </CardHeader>
           <CardContent>
@@ -257,6 +308,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Image</TableHead>
                     <TableHead>Titre</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Zone</TableHead>
@@ -268,6 +320,17 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                 <TableBody>
                   {properties.map((p) => (
                     <TableRow key={p.id}>
+                      <TableCell>
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                          {p.image_url ? (
+                            <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Image className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">{p.title}</TableCell>
                       <TableCell className="capitalize">{p.type}</TableCell>
                       <TableCell>{p.zone}</TableCell>
@@ -276,16 +339,19 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                           <PropertyFormDialog
-                            initial={{ title: p.title, type: p.type, zone: p.zone, price: p.price, surface: p.surface, bedrooms: p.bedrooms, description: p.description, features: p.features }}
-                            onSave={(form) => {
-                              updateProperty(p.id, form);
-                              toast({ title: "Modifié", description: `"${form.title}" a été mis à jour.` });
+                            initial={{
+                              title: p.title,
+                              type: p.type,
+                              zone: p.zone,
+                              price: p.price,
+                              surface: p.surface,
+                              bedrooms: p.bedrooms ?? undefined,
+                              description: p.description,
+                              features: p.features,
+                              image_url: p.image_url ?? "",
                             }}
-                            trigger={
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Button>
-                            }
+                            onSave={(form) => handleUpdate(p.id, form)}
+                            trigger={<Button variant="ghost" size="icon" className="h-8 w-8"><Pencil className="w-3.5 h-3.5" /></Button>}
                           />
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(p.id, p.title)}>
                             <Trash2 className="w-3.5 h-3.5" />
@@ -296,7 +362,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                   ))}
                   {properties.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                         Aucun bien. Cliquez sur "Ajouter un bien" pour commencer.
                       </TableCell>
                     </TableRow>

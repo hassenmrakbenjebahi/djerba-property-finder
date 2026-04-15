@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PropertyCard from "./PropertyCard";
 import TypingIndicator from "./TypingIndicator";
-import { Property, formatPrice } from "@/data/properties";
-import { useProperties } from "@/context/PropertyContext";
+import { Property, useProperties, formatPrice } from "@/context/PropertyContext";
 
 interface Message {
   id: string;
@@ -49,82 +48,58 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
 
   if (lower.includes("villa")) {
     const results = search({ type: "villa" });
-    return {
-      text: `🏡 Voici nos **${results.length} villas** disponibles à Djerba. Des biens d'exception entre mer et tradition !`,
-      properties: results,
-    };
+    return { text: `🏡 Voici nos **${results.length} villas** disponibles à Djerba !`, properties: results };
   }
 
   if (lower.includes("appartement")) {
     const results = search({ type: "appartement" });
-    return {
-      text: `🏢 Nous avons **${results.length} appartements** disponibles. Parfaits pour habiter ou investir !`,
-      properties: results,
-    };
+    return { text: `🏢 Nous avons **${results.length} appartements** disponibles.`, properties: results };
   }
 
   if (lower.includes("terrain")) {
     const results = search({ type: "terrain" });
-    return {
-      text: `🌿 **${results.length} terrains** à saisir ! Construisez la maison de vos rêves à Djerba.`,
-      properties: results,
-    };
+    return { text: `🌿 **${results.length} terrains** à saisir !`, properties: results };
   }
 
   if (lower.includes("maison") || lower.includes("houch")) {
     const results = search({ type: "maison" });
-    return {
-      text: `🏠 Découvrez nos **maisons traditionnelles** ! Le charme authentique de Djerba.`,
-      properties: results,
-    };
+    return { text: `🏠 Découvrez nos **maisons traditionnelles** !`, properties: results };
   }
 
   if (lower.includes("midoun")) {
     const results = search({ zone: "Midoun" });
-    return {
-      text: `📍 **Midoun** est la zone touristique par excellence ! Proche des plages et des hôtels. Voici nos biens :`,
-      properties: results,
-    };
+    return { text: `📍 **Midoun** — zone touristique par excellence !`, properties: results };
   }
 
   if (lower.includes("houmt") || lower.includes("souk")) {
     const results = search({ zone: "Houmt Souk" });
-    return {
-      text: `📍 **Houmt Souk**, le cœur historique de Djerba. Animé, culturel et authentique !`,
-      properties: results,
-    };
+    return { text: `📍 **Houmt Souk**, le cœur historique de Djerba.`, properties: results };
   }
 
   if (lower.includes("ajim")) {
     const results = search({ zone: "Ajim" });
-    return {
-      text: `📍 **Ajim**, le calme face à la mer. Idéal pour les amoureux de tranquillité.`,
-      properties: results,
-    };
+    return { text: `📍 **Ajim**, le calme face à la mer.`, properties: results };
   }
 
   if (lower.includes("budget") || lower.includes("300") || lower.includes("moins")) {
     const results = search({ maxPrice: 300000 });
-    return {
-      text: `💰 Voici les biens sous **300 000 TND**. De belles opportunités à saisir !`,
-      properties: results,
-    };
+    return { text: `💰 Voici les biens sous **300 000 TND** !`, properties: results };
   }
 
   if (lower.includes("bonjour") || lower.includes("salut") || lower.includes("hello") || lower.includes("bonsoir")) {
     return {
-      text: "Bonjour et bienvenue chez **Immo Rêve Djerba** ! 🌴\n\nJe suis votre assistant immobilier. Comment puis-je vous aider ?\n\n• Chercher un bien (villa, appartement, terrain)\n• Découvrir les zones de Djerba\n• Réserver une visite\n• Connaître les prix du marché",
+      text: "Bonjour et bienvenue chez **Immo Rêve Djerba** ! 🌴\n\nJe suis votre assistant immobilier. Comment puis-je vous aider ?",
     };
   }
 
   if (lower.includes("prix") || lower.includes("marché") || lower.includes("cher")) {
     return {
-      text: "📊 **Aperçu du marché immobilier à Djerba** :\n\n• **Villas** : 300 000 - 900 000 TND\n• **Appartements** : 150 000 - 250 000 TND\n• **Terrains** : 80 - 200 TND/m²\n• **Maisons traditionnelles** : 200 000 - 400 000 TND\n\nLes prix varient selon la zone et la proximité de la mer. Quel est votre budget ?",
+      text: "📊 **Aperçu du marché** :\n\n• **Villas** : 300 000 - 900 000 TND\n• **Appartements** : 150 000 - 250 000 TND\n• **Terrains** : 80 - 200 TND/m²\n\nQuel est votre budget ?",
     };
   }
 
   return {
-    text: "Je n'ai pas bien compris votre demande. 😊 Voici ce que je peux faire :\n\n• 🏡 Chercher des **villas, appartements, terrains**\n• 📍 Explorer les zones : **Midoun, Houmt Souk, Ajim**\n• 💰 Filtrer par **budget**\n• 📅 Réserver une **visite**\n• 📞 Vous mettre en **contact** avec l'agence\n\nEssayez par exemple : *\"Villas à Midoun\"* ou *\"Budget moins de 300 000\"*",
+    text: "Je n'ai pas bien compris. 😊 Essayez : *\"Villas à Midoun\"* ou *\"Budget moins de 300 000\"*",
   };
 }
 
@@ -134,7 +109,7 @@ const ChatBot = () => {
     {
       id: "welcome",
       role: "bot",
-      text: "Bienvenue chez **Immo Rêve Djerba** ! 🌴🏠\n\nJe suis votre assistant immobilier. Je peux vous aider à trouver le bien idéal à Djerba.\n\nQue recherchez-vous ?",
+      text: "Bienvenue chez **Immo Rêve Djerba** ! 🌴🏠\n\nJe suis votre assistant immobilier. Que recherchez-vous ?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -179,7 +154,6 @@ const ChatBot = () => {
 
   return (
     <div className="flex flex-col h-[600px] max-h-[80vh] bg-card rounded-2xl border border-border shadow-xl overflow-hidden">
-      {/* Header */}
       <div className="bg-primary px-6 py-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
           <Bot className="w-5 h-5 text-primary-foreground" />
@@ -190,38 +164,22 @@ const ChatBot = () => {
         </div>
       </div>
 
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 chat-scrollbar">
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
-          >
+          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}>
             <div className={`flex gap-2 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-1 ${
-                  msg.role === "user" ? "bg-chat-user" : "bg-muted"
-                }`}
-              >
-                {msg.role === "user" ? (
-                  <User className="w-3.5 h-3.5 text-chat-user-foreground" />
-                ) : (
-                  <Bot className="w-3.5 h-3.5 text-muted-foreground" />
-                )}
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-1 ${msg.role === "user" ? "bg-chat-user" : "bg-muted"}`}>
+                {msg.role === "user" ? <User className="w-3.5 h-3.5 text-chat-user-foreground" /> : <Bot className="w-3.5 h-3.5 text-muted-foreground" />}
               </div>
               <div>
                 <div
-                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-chat-user text-chat-user-foreground rounded-br-md"
-                      : "bg-chat-bot text-chat-bot-foreground rounded-bl-md"
-                  }`}
+                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-chat-user text-chat-user-foreground rounded-br-md" : "bg-chat-bot text-chat-bot-foreground rounded-bl-md"}`}
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }}
                 />
                 {msg.properties && msg.properties.length > 0 && (
                   <div className="mt-3 space-y-2">
                     {msg.properties.map((p) => (
-                      <PropertyCard key={p.id} property={p} />
+                      <PropertyCard key={p.id} property={p} compact />
                     ))}
                   </div>
                 )}
@@ -243,16 +201,11 @@ const ChatBot = () => {
         )}
       </div>
 
-      {/* Quick Actions */}
       {messages.length <= 1 && (
         <div className="px-4 pb-2">
           <div className="flex flex-wrap gap-2">
             {quickActions.map((action) => (
-              <button
-                key={action}
-                onClick={() => sendMessage(action)}
-                className="text-xs bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground px-3 py-1.5 rounded-full transition-colors"
-              >
+              <button key={action} onClick={() => sendMessage(action)} className="text-xs bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground px-3 py-1.5 rounded-full transition-colors">
                 {action}
               </button>
             ))}
@@ -260,20 +213,9 @@ const ChatBot = () => {
         </div>
       )}
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className="p-4 border-t border-border flex gap-2">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Tapez votre message..."
-          className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-1 focus-visible:ring-primary"
-        />
-        <Button
-          type="submit"
-          size="icon"
-          className="rounded-full shrink-0 bg-primary hover:bg-primary/90"
-          disabled={!input.trim() || isTyping}
-        >
+        <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Tapez votre message..." className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-1 focus-visible:ring-primary" />
+        <Button type="submit" size="icon" className="rounded-full shrink-0" disabled={!input.trim() || isTyping}>
           <Send className="w-4 h-4" />
         </Button>
       </form>
