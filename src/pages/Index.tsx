@@ -12,7 +12,7 @@ import { useState } from "react";
 const AGENCY_NAME = "Immo Rêve Djerba";
 
 const Index = () => {
-  const { properties } = useProperties();
+  const { properties, loading } = useProperties();
   const [filterType, setFilterType] = useState<string>("all");
 
   const filteredProperties = filterType === "all" ? properties : properties.filter((p) => p.type === filterType);
