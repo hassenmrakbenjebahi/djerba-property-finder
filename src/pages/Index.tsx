@@ -1,13 +1,13 @@
 import ChatBot from "@/components/ChatBot";
 import PropertyCard from "@/components/PropertyCard";
-import { useProperties } from "@/context/PropertyContext";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import { useProperties, formatPrice } from "@/context/PropertyContext";
 import { MapPin, Phone, Mail, Home, Search, ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/djerba-hero.jpg";
 import logo from "@/assets/logo.png";
 import { useState } from "react";
-import { formatPrice } from "@/data/properties";
 
 const AGENCY_NAME = "Immo Rêve Djerba";
 
