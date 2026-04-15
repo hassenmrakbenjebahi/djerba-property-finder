@@ -1,41 +1,58 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { Property, properties as initialProperties } from "@/data/properties";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+
+export type Property = Tables<"properties">;
+export type PropertyInsert = TablesInsert<"properties">;
 
 interface PropertyContextType {
   properties: Property[];
-  addProperty: (property: Omit<Property, "id">) => void;
-  updateProperty: (id: string, property: Omit<Property, "id">) => void;
-  deleteProperty: (id: string) => void;
+  loading: boolean;
+  addProperty: (property: PropertyInsert) => Promise<void>;
+  updateProperty: (id: string, property: Partial<TablesUpdate<"properties">>) => Promise<void>;
+  deleteProperty: (id: string) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
 export const PropertyProvider = ({ children }: { children: ReactNode }) => {
-  const [properties, setProperties] = useState<Property[]>(() => {
-    const saved = localStorage.getItem("immo-properties");
-    return saved ? JSON.parse(saved) : initialProperties;
-  });
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const save = (props: Property[]) => {
-    setProperties(props);
-    localStorage.setItem("immo-properties", JSON.stringify(props));
+  const fetchProperties = async () => {
+    const { data, error } = await supabase
+      .from("properties")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) setProperties(data);
+    setLoading(false);
   };
 
-  const addProperty = (property: Omit<Property, "id">) => {
-    const newProp = { ...property, id: Date.now().toString() } as Property;
-    save([...properties, newProp]);
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const addProperty = async (property: PropertyInsert) => {
+    const { error } = await supabase.from("properties").insert(property);
+    if (!error) await fetchProperties();
+    else throw error;
   };
 
-  const updateProperty = (id: string, property: Omit<Property, "id">) => {
-    save(properties.map((p) => (p.id === id ? { ...property, id } as Property : p)));
+  const updateProperty = async (id: string, property: Partial<TablesUpdate<"properties">>) => {
+    const { error } = await supabase.from("properties").update(property).eq("id", id);
+    if (!error) await fetchProperties();
+    else throw error;
   };
 
-  const deleteProperty = (id: string) => {
-    save(properties.filter((p) => p.id !== id));
+  const deleteProperty = async (id: string) => {
+    const { error } = await supabase.from("properties").delete().eq("id", id);
+    if (!error) await fetchProperties();
+    else throw error;
   };
 
   return (
-    <PropertyContext.Provider value={{ properties, addProperty, updateProperty, deleteProperty }}>
+    <PropertyContext.Provider value={{ properties, loading, addProperty, updateProperty, deleteProperty, refetch: fetchProperties }}>
       {children}
     </PropertyContext.Provider>
   );
@@ -46,3 +63,11 @@ export const useProperties = () => {
   if (!ctx) throw new Error("useProperties must be used within PropertyProvider");
   return ctx;
 };
+
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat("fr-TN", {
+    style: "currency",
+    currency: "TND",
+    maximumFractionDigits: 0,
+  }).format(price);
+}
