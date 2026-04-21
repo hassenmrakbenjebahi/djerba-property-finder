@@ -26,7 +26,12 @@ export const PropertyProvider = ({ children }: { children: ReactNode }) => {
       .from("properties")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error && data) setProperties(data);
+    if (!error && data && data.length > 0) {
+      setProperties(data);
+    } else {
+      // Fallback: show demo properties when DB is empty (or unreachable)
+      setProperties(demoProperties);
+    }
     setLoading(false);
   };
 
