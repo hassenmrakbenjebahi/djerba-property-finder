@@ -43,7 +43,7 @@ const Index = () => {
           </nav>
           <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" /> +216 75 XXX XXX
+              <Phone className="w-3.5 h-3.5" /> +216 50 070 477
             </span>
           </div>
         </div>
@@ -185,10 +185,10 @@ const Index = () => {
           </h3>
           <div className="flex flex-wrap gap-6 justify-center text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-primary" /> +216 75 XXX XXX
+              <Phone className="w-4 h-4 text-primary" /> +216 50 070 477
             </span>
             <span className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-primary" /> contact@immorevdjerba.tn
+              <Mail className="w-4 h-4 text-primary" /> errighioussema@gmail.com
             </span>
             <span className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" /> Houmt Souk, Djerba

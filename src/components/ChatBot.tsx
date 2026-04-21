@@ -36,7 +36,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
 
   if (lower.includes("contacter") || lower.includes("contact") || lower.includes("téléphone") || lower.includes("appeler")) {
     return {
-      text: "📞 Vous pouvez nous contacter :\n\n• **Téléphone** : +216 75 XXX XXX\n• **WhatsApp** : +216 XX XXX XXX\n• **Email** : contact@immorevdjerba.tn\n• **Adresse** : Houmt Souk, Djerba\n\nNos horaires : Lun-Sam 9h-18h. N'hésitez pas à nous appeler pour une visite gratuite ! 🏠",
+      text: "📞 Vous pouvez nous contacter :\n\n• **Téléphone / WhatsApp** : +216 50 070 477\n• **Email** : errighioussema@gmail.com\n• **Adresse** : Houmt Souk, Djerba\n\nNos horaires : Lun-Sam 9h-18h. N'hésitez pas à nous appeler pour une visite gratuite ! 🏠",
     };
   }
 

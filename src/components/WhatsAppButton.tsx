@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const WHATSAPP_NUMBER = "21675000000"; // Replace with real number
+const WHATSAPP_NUMBER = "21650070477";
 
 const WhatsAppButton = () => {
   const [open, setOpen] = useState(false);
