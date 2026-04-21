@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { demoProperties } from "@/data/demoProperties";
 
 export type Property = Tables<"properties">;
 export type PropertyInsert = TablesInsert<"properties">;
@@ -25,7 +26,12 @@ export const PropertyProvider = ({ children }: { children: ReactNode }) => {
       .from("properties")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error && data) setProperties(data);
+    if (!error && data && data.length > 0) {
+      setProperties(data);
+    } else {
+      // Fallback: show demo properties when DB is empty (or unreachable)
+      setProperties(demoProperties);
+    }
     setLoading(false);
   };
 
