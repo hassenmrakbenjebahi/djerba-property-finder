@@ -43,7 +43,7 @@ const Index = () => {
           </nav>
           <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" /> +216 75 XXX XXX
+              <Phone className="w-3.5 h-3.5" /> +216 50 070 477
             </span>
           </div>
         </div>
