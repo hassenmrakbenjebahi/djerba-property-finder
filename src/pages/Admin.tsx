@@ -20,6 +20,7 @@ type PropertyForm = {
   title: string;
   type: string;
   zone: string;
+  listing_type: "sale" | "rent";
   price: number;
   surface: number;
   bedrooms?: number;
@@ -32,6 +33,7 @@ const emptyForm: PropertyForm = {
   title: "",
   type: "villa",
   zone: "Midoun",
+  listing_type: "sale",
   price: 0,
   surface: 0,
   bedrooms: undefined,
