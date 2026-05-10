@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
@@ -26,7 +26,8 @@ type PropertyForm = {
   bedrooms?: number;
   description: string;
   features: string[];
-  image_url?: string;
+  images: string[];
+  available_from?: string;
 };
 
 const emptyForm: PropertyForm = {
@@ -39,7 +40,8 @@ const emptyForm: PropertyForm = {
   bedrooms: undefined,
   description: "",
   features: [],
-  image_url: "",
+  images: [],
+  available_from: "",
 };
 
 const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
@@ -90,19 +92,40 @@ const PropertyFormDialog = ({
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<PropertyForm>(initial || emptyForm);
   const [featuresText, setFeaturesText] = useState((initial?.features || []).join(", "));
+  const [newImage, setNewImage] = useState("");
 
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
       setForm(initial || emptyForm);
       setFeaturesText((initial?.features || []).join(", "));
+      setNewImage("");
     }
+  };
+
+  const addImage = () => {
+    const url = newImage.trim();
+    if (!url) return;
+    if (form.images.length >= 10) {
+      toast({ title: "Limite atteinte", description: "10 images maximum par bien.", variant: "destructive" });
+      return;
+    }
+    setForm({ ...form, images: [...form.images, url] });
+    setNewImage("");
+  };
+
+  const removeImage = (i: number) => {
+    setForm({ ...form, images: form.images.filter((_, idx) => idx !== i) });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.surface) {
       toast({ title: "Erreur", description: "Veuillez remplir tous les champs obligatoires.", variant: "destructive" });
+      return;
+    }
+    if (form.listing_type === "rent" && !form.available_from) {
+      toast({ title: "Date manquante", description: "Indiquez la date de début de disponibilité pour une location.", variant: "destructive" });
       return;
     }
     onSave({ ...form, features: featuresText.split(",").map((f) => f.trim()).filter(Boolean) });
