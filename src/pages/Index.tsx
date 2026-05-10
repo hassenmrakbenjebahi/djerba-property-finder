@@ -14,8 +14,13 @@ const AGENCY_NAME = "Immo Rêve Djerba";
 const Index = () => {
   const { properties, loading } = useProperties();
   const [filterType, setFilterType] = useState<string>("all");
+  const [listingFilter, setListingFilter] = useState<"all" | "sale" | "rent">("all");
 
-  const filteredProperties = filterType === "all" ? properties : properties.filter((p) => p.type === filterType);
+  const filteredProperties = properties.filter((p) => {
+    if (filterType !== "all" && p.type !== filterType) return false;
+    if (listingFilter !== "all" && p.listing_type !== listingFilter) return false;
+    return true;
+  });
   const types = [
     { value: "all", label: "Tous" },
     { value: "villa", label: "Villas" },
@@ -88,7 +93,30 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Filters */}
+        {/* Sale / Rent toggle */}
+        <div className="flex justify-center mb-5">
+          <div className="inline-flex bg-muted rounded-full p-1">
+            {([
+              { value: "all", label: "Tous" },
+              { value: "sale", label: "À vendre" },
+              { value: "rent", label: "À louer" },
+            ] as const).map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setListingFilter(t.value)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                  listingFilter === t.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Type filters */}
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {types.map((t) => (
             <button
