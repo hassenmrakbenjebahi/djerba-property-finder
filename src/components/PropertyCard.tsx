@@ -14,6 +14,9 @@ const typeLabels: Record<string, string> = {
 };
 
 const PropertyCard = ({ property, compact }: PropertyCardProps) => {
+  const isRent = property.listing_type === "rent";
+  const priceLabel = isRent ? `${formatPrice(property.price)} / mois` : formatPrice(property.price);
+
   if (compact) {
     return (
       <div className="bg-card rounded-lg border border-border p-3 animate-fade-in flex gap-3 items-center">
@@ -22,8 +25,8 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
         )}
         <div className="min-w-0">
           <h4 className="font-semibold text-card-foreground text-sm truncate">{property.title}</h4>
-          <p className="text-primary text-sm font-bold">{formatPrice(property.price)}</p>
-          <p className="text-muted-foreground text-xs">{property.zone} • {property.surface} m²</p>
+          <p className="text-primary text-sm font-bold">{priceLabel}</p>
+          <p className="text-muted-foreground text-xs">{property.zone} • {property.surface} m² • {isRent ? "À louer" : "À vendre"}</p>
         </div>
       </div>
     );
@@ -48,17 +51,20 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
         
-        {/* Type badge */}
-        <div className="absolute top-3 left-3">
+        {/* Type + listing badges */}
+        <div className="absolute top-3 left-3 flex gap-2">
           <span className="bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
             {typeLabels[property.type] || property.type}
+          </span>
+          <span className={`backdrop-blur-sm text-xs font-semibold px-3 py-1.5 rounded-full ${isRent ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>
+            {isRent ? "À louer" : "À vendre"}
           </span>
         </div>
 
         {/* Price on image */}
         <div className="absolute bottom-3 left-3">
           <span className="text-primary-foreground font-bold text-xl drop-shadow-lg">
-            {formatPrice(property.price)}
+            {priceLabel}
           </span>
         </div>
 
