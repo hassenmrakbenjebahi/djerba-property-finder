@@ -193,20 +193,67 @@ const PropertyFormDialog = ({
               <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
             </div>
           </div>
-          <div>
-            <Label>URL de l'image</Label>
-            <div className="flex gap-2">
-              <Input value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="flex-1" />
-              <div className="w-10 h-10 rounded-lg border border-border overflow-hidden shrink-0">
-                {form.image_url ? (
-                  <img src={form.image_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <Image className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
+          {form.listing_type === "rent" && (
+            <div>
+              <Label>Date de début de disponibilité *</Label>
+              <Input
+                type="date"
+                value={form.available_from || ""}
+                onChange={(e) => setForm({ ...form, available_from: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">À partir de quand le bien est disponible à la location.</p>
             </div>
+          )}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>Prix (TND) *</Label>
+              <Input type="number" value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Surface (m²) *</Label>
+              <Input type="number" value={form.surface || ""} onChange={(e) => setForm({ ...form, surface: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Chambres</Label>
+              <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
+            </div>
+          </div>
+          <div>
+            <Label>Images (max 10) — la 1ère est l'image de couverture</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newImage}
+                onChange={(e) => setNewImage(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addImage(); } }}
+                placeholder="https://..."
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" onClick={addImage} disabled={form.images.length >= 10}>
+                <Plus className="w-4 h-4 mr-1" /> Ajouter
+              </Button>
+            </div>
+            {form.images.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {form.images.map((src, i) => (
+                  <div key={src + i} className="relative group">
+                    <img src={src} alt="" className="w-full h-20 object-cover rounded-lg border border-border" />
+                    {i === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-primary text-primary-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                        Couverture
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-2">{form.images.length}/10 images</p>
           </div>
           <div>
             <Label>Description</Label>
