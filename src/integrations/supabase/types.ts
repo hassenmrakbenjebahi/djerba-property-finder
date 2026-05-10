@@ -16,12 +16,14 @@ export type Database = {
     Tables: {
       properties: {
         Row: {
+          available_from: string | null
           bedrooms: number | null
           created_at: string
           description: string
           features: string[]
           id: string
           image_url: string | null
+          images: string[]
           listing_type: string
           price: number
           surface: number
@@ -31,12 +33,14 @@ export type Database = {
           zone: string
         }
         Insert: {
+          available_from?: string | null
           bedrooms?: number | null
           created_at?: string
           description?: string
           features?: string[]
           id?: string
           image_url?: string | null
+          images?: string[]
           listing_type?: string
           price: number
           surface: number
@@ -46,12 +50,14 @@ export type Database = {
           zone: string
         }
         Update: {
+          available_from?: string | null
           bedrooms?: number | null
           created_at?: string
           description?: string
           features?: string[]
           id?: string
           image_url?: string | null
+          images?: string[]
           listing_type?: string
           price?: number
           surface?: number

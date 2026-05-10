@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
@@ -26,7 +26,8 @@ type PropertyForm = {
   bedrooms?: number;
   description: string;
   features: string[];
-  image_url?: string;
+  images: string[];
+  available_from?: string;
 };
 
 const emptyForm: PropertyForm = {
@@ -39,7 +40,8 @@ const emptyForm: PropertyForm = {
   bedrooms: undefined,
   description: "",
   features: [],
-  image_url: "",
+  images: [],
+  available_from: "",
 };
 
 const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
@@ -90,19 +92,40 @@ const PropertyFormDialog = ({
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<PropertyForm>(initial || emptyForm);
   const [featuresText, setFeaturesText] = useState((initial?.features || []).join(", "));
+  const [newImage, setNewImage] = useState("");
 
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
       setForm(initial || emptyForm);
       setFeaturesText((initial?.features || []).join(", "));
+      setNewImage("");
     }
+  };
+
+  const addImage = () => {
+    const url = newImage.trim();
+    if (!url) return;
+    if (form.images.length >= 10) {
+      toast({ title: "Limite atteinte", description: "10 images maximum par bien.", variant: "destructive" });
+      return;
+    }
+    setForm({ ...form, images: [...form.images, url] });
+    setNewImage("");
+  };
+
+  const removeImage = (i: number) => {
+    setForm({ ...form, images: form.images.filter((_, idx) => idx !== i) });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.surface) {
       toast({ title: "Erreur", description: "Veuillez remplir tous les champs obligatoires.", variant: "destructive" });
+      return;
+    }
+    if (form.listing_type === "rent" && !form.available_from) {
+      toast({ title: "Date manquante", description: "Indiquez la date de début de disponibilité pour une location.", variant: "destructive" });
       return;
     }
     onSave({ ...form, features: featuresText.split(",").map((f) => f.trim()).filter(Boolean) });
@@ -170,20 +193,67 @@ const PropertyFormDialog = ({
               <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
             </div>
           </div>
-          <div>
-            <Label>URL de l'image</Label>
-            <div className="flex gap-2">
-              <Input value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="flex-1" />
-              <div className="w-10 h-10 rounded-lg border border-border overflow-hidden shrink-0">
-                {form.image_url ? (
-                  <img src={form.image_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <Image className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
+          {form.listing_type === "rent" && (
+            <div>
+              <Label>Date de début de disponibilité *</Label>
+              <Input
+                type="date"
+                value={form.available_from || ""}
+                onChange={(e) => setForm({ ...form, available_from: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">À partir de quand le bien est disponible à la location.</p>
             </div>
+          )}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>Prix (TND) *</Label>
+              <Input type="number" value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Surface (m²) *</Label>
+              <Input type="number" value={form.surface || ""} onChange={(e) => setForm({ ...form, surface: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Chambres</Label>
+              <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
+            </div>
+          </div>
+          <div>
+            <Label>Images (max 10) — la 1ère est l'image de couverture</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newImage}
+                onChange={(e) => setNewImage(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addImage(); } }}
+                placeholder="https://..."
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" onClick={addImage} disabled={form.images.length >= 10}>
+                <Plus className="w-4 h-4 mr-1" /> Ajouter
+              </Button>
+            </div>
+            {form.images.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {form.images.map((src, i) => (
+                  <div key={src + i} className="relative group">
+                    <img src={src} alt="" className="w-full h-20 object-cover rounded-lg border border-border" />
+                    {i === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-primary text-primary-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                        Couverture
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-2">{form.images.length}/10 images</p>
           </div>
           <div>
             <Label>Description</Label>
@@ -226,7 +296,9 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         bedrooms: form.bedrooms || null,
         description: form.description,
         features: form.features,
-        image_url: form.image_url || null,
+        images: form.images,
+        image_url: form.images[0] || null,
+        available_from: form.listing_type === "rent" && form.available_from ? form.available_from : null,
       });
       toast({ title: "Ajouté", description: `"${form.title}" a été ajouté.` });
     } catch {
@@ -246,7 +318,9 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         bedrooms: form.bedrooms || null,
         description: form.description,
         features: form.features,
-        image_url: form.image_url || null,
+        images: form.images,
+        image_url: form.images[0] || null,
+        available_from: form.listing_type === "rent" && form.available_from ? form.available_from : null,
       });
       toast({ title: "Modifié", description: `"${form.title}" a été mis à jour.` });
     } catch {
@@ -336,8 +410,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                     <TableRow key={p.id}>
                       <TableCell>
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
-                          {p.image_url ? (
-                            <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
+                          {(p.images?.[0] || p.image_url) ? (
+                            <img src={p.images?.[0] || p.image_url || ""} alt={p.title} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Image className="w-4 h-4 text-muted-foreground" />
@@ -363,7 +437,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                               bedrooms: p.bedrooms ?? undefined,
                               description: p.description,
                               features: p.features,
-                              image_url: p.image_url ?? "",
+                              images: (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : []),
+                              available_from: p.available_from ?? "",
                             }}
                             onSave={(form) => handleUpdate(p.id, form)}
                             trigger={<Button variant="ghost" size="icon" className="h-8 w-8"><Pencil className="w-3.5 h-3.5" /></Button>}

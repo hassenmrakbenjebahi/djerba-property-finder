@@ -1,9 +1,18 @@
 import type { Property } from "@/context/PropertyContext";
 
+const now = new Date().toISOString();
+
+const make = (p: Omit<Property, "created_at" | "updated_at" | "images" | "available_from"> & { images?: string[]; available_from?: string | null }): Property => ({
+  ...p,
+  images: p.images && p.images.length ? p.images : (p.image_url ? [p.image_url] : []),
+  available_from: p.available_from ?? null,
+  created_at: now,
+  updated_at: now,
+});
+
 // Static demo properties — used as fallback when the database is empty.
-// Once real properties are added via the admin panel, these are replaced.
 export const demoProperties: Property[] = [
-  {
+  make({
     id: "demo-1",
     title: "Villa Méditerranéenne avec piscine",
     type: "villa",
@@ -14,11 +23,15 @@ export const demoProperties: Property[] = [
     listing_type: "sale",
     description: "Magnifique villa avec vue mer, piscine privée et jardin paysager. Proche des plages.",
     features: ["Piscine", "Vue mer", "Jardin", "Garage"],
-    image_url: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&q=80",
+    ],
+  }),
+  make({
     id: "demo-2",
     title: "Appartement moderne centre-ville",
     type: "appartement",
@@ -29,11 +42,14 @@ export const demoProperties: Property[] = [
     listing_type: "sale",
     description: "Appartement rénové au cœur de Houmt Souk, proche de tous les commerces et du souk.",
     features: ["Terrasse", "Climatisation", "Ascenseur"],
-    image_url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80",
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80",
+    ],
+  }),
+  make({
     id: "demo-3",
     title: "Terrain constructible vue mer",
     type: "terrain",
@@ -44,11 +60,9 @@ export const demoProperties: Property[] = [
     listing_type: "sale",
     description: "Terrain plat avec vue dégagée sur la mer, idéal pour construire une villa de rêve.",
     features: ["Vue mer", "Viabilisé", "Route goudronnée"],
-    image_url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80",
+  }),
+  make({
     id: "demo-4",
     title: "Maison traditionnelle Houch",
     type: "maison",
@@ -59,11 +73,13 @@ export const demoProperties: Property[] = [
     listing_type: "sale",
     description: "Authentique houch djerbien rénové avec patio intérieur et architecture traditionnelle.",
     features: ["Patio", "Architecture traditionnelle", "Rénové"],
-    image_url: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=1200&q=80",
+    ],
+  }),
+  make({
     id: "demo-5",
     title: "Villa pieds dans l'eau — Location",
     type: "villa",
@@ -72,13 +88,17 @@ export const demoProperties: Property[] = [
     surface: 400,
     bedrooms: 5,
     listing_type: "rent",
+    available_from: "2026-06-01",
     description: "Villa exceptionnelle en front de mer à louer à la semaine. Idéal vacances de rêve à Djerba.",
     features: ["Front de mer", "Piscine", "5 chambres", "Vue panoramique"],
-    image_url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80",
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1200&q=80",
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1200&q=80",
+    ],
+  }),
+  make({
     id: "demo-6",
     title: "Terrain agricole avec oliviers",
     type: "terrain",
@@ -89,11 +109,9 @@ export const demoProperties: Property[] = [
     listing_type: "sale",
     description: "Grand terrain planté d'oliviers centenaires, parfait pour un projet agritouristique.",
     features: ["Oliviers", "Puits", "Accès facile"],
-    image_url: "https://images.unsplash.com/photo-1445363692815-ebcd599b7621?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1445363692815-ebcd599b7621?w=1200&q=80",
+  }),
+  make({
     id: "demo-7",
     title: "Appartement meublé à louer",
     type: "appartement",
@@ -102,13 +120,17 @@ export const demoProperties: Property[] = [
     surface: 90,
     bedrooms: 2,
     listing_type: "rent",
+    available_from: "2026-05-15",
     description: "Appartement entièrement meublé, location mensuelle ou saisonnière. À 5 min de la plage.",
     features: ["Meublé", "Proche plage", "WiFi"],
-    image_url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
+    image_url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80",
+      "https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?w=1200&q=80",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=80",
+    ],
+  }),
+  make({
     id: "demo-8",
     title: "Villa de charme avec jardin tropical",
     type: "villa",
@@ -119,8 +141,6 @@ export const demoProperties: Property[] = [
     listing_type: "sale",
     description: "Belle villa entourée d'un jardin tropical luxuriant. Calme et intimité assurés.",
     features: ["Jardin tropical", "Piscine", "Calme"],
-    image_url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    image_url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80",
+  }),
 ];

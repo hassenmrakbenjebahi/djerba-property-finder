@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Property, formatPrice } from "@/context/PropertyContext";
-import { MapPin, Maximize, BedDouble, ArrowUpRight } from "lucide-react";
+import { MapPin, Maximize, BedDouble, ArrowUpRight, Images, Calendar } from "lucide-react";
+import PropertyDetailDialog from "./PropertyDetailDialog";
 
 interface PropertyCardProps {
   property: Property;
@@ -14,8 +16,11 @@ const typeLabels: Record<string, string> = {
 };
 
 const PropertyCard = ({ property, compact }: PropertyCardProps) => {
+  const [open, setOpen] = useState(false);
   const isRent = property.listing_type === "rent";
   const priceLabel = isRent ? `${formatPrice(property.price)} / mois` : formatPrice(property.price);
+  const cover = (property.images && property.images.length > 0) ? property.images[0] : property.image_url;
+  const photoCount = property.images?.length || (property.image_url ? 1 : 0);
 
   if (compact) {
     return (
@@ -33,12 +38,17 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
   }
 
   return (
-    <div className="group bg-card rounded-2xl border border-border overflow-hidden animate-fade-in hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-1">
+    <>
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="text-left w-full group bg-card rounded-2xl border border-border overflow-hidden animate-fade-in hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
+    >
       {/* Image */}
       <div className="relative h-56 overflow-hidden">
-        {property.image_url ? (
+        {cover ? (
           <img
-            src={property.image_url}
+            src={cover}
             alt={property.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
             loading="lazy"
@@ -68,8 +78,15 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
           </span>
         </div>
 
+        {/* Photo count */}
+        {photoCount > 1 && (
+          <div className="absolute top-3 right-3 bg-background/80 backdrop-blur text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+            <Images className="w-3 h-3" /> {photoCount}
+          </div>
+        )}
+
         {/* Arrow icon */}
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="w-8 h-8 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
             <ArrowUpRight className="w-4 h-4 text-primary-foreground" />
           </div>
@@ -98,6 +115,11 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
               <BedDouble className="w-3.5 h-3.5 text-primary" /> {property.bedrooms} ch.
             </span>
           )}
+          {isRent && property.available_from && (
+            <span className="inline-flex items-center gap-1.5 text-xs">
+              <Calendar className="w-3.5 h-3.5 text-primary" /> dès {new Date(property.available_from).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
+            </span>
+          )}
         </div>
 
         {/* Features */}
@@ -117,7 +139,9 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
           )}
         </div>
       </div>
-    </div>
+    </button>
+    <PropertyDetailDialog property={property} open={open} onOpenChange={setOpen} />
+    </>
   );
 };
 
