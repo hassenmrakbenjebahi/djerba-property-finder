@@ -144,6 +144,16 @@ const PropertyFormDialog = ({
               </Select>
             </div>
           </div>
+          <div>
+            <Label>Transaction *</Label>
+            <Select value={form.listing_type} onValueChange={(v) => setForm({ ...form, listing_type: v as "sale" | "rent" })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sale">À vendre</SelectItem>
+                <SelectItem value="rent">À louer (prix / mois)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label>Prix (TND) *</Label>
@@ -208,6 +218,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         title: form.title,
         type: form.type,
         zone: form.zone,
+        listing_type: form.listing_type,
         price: form.price,
         surface: form.surface,
         bedrooms: form.bedrooms || null,
@@ -227,6 +238,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         title: form.title,
         type: form.type,
         zone: form.zone,
+        listing_type: form.listing_type,
         price: form.price,
         surface: form.surface,
         bedrooms: form.bedrooms || null,
@@ -343,6 +355,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                               title: p.title,
                               type: p.type,
                               zone: p.zone,
+                              listing_type: (p.listing_type === "rent" ? "rent" : "sale"),
                               price: p.price,
                               surface: p.surface,
                               bedrooms: p.bedrooms ?? undefined,
