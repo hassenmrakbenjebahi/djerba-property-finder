@@ -296,7 +296,9 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         bedrooms: form.bedrooms || null,
         description: form.description,
         features: form.features,
-        image_url: form.image_url || null,
+        images: form.images,
+        image_url: form.images[0] || null,
+        available_from: form.listing_type === "rent" && form.available_from ? form.available_from : null,
       });
       toast({ title: "Ajouté", description: `"${form.title}" a été ajouté.` });
     } catch {
@@ -316,7 +318,9 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         bedrooms: form.bedrooms || null,
         description: form.description,
         features: form.features,
-        image_url: form.image_url || null,
+        images: form.images,
+        image_url: form.images[0] || null,
+        available_from: form.listing_type === "rent" && form.available_from ? form.available_from : null,
       });
       toast({ title: "Modifié", description: `"${form.title}" a été mis à jour.` });
     } catch {
@@ -406,8 +410,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                     <TableRow key={p.id}>
                       <TableCell>
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
-                          {p.image_url ? (
-                            <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
+                          {(p.images?.[0] || p.image_url) ? (
+                            <img src={p.images?.[0] || p.image_url || ""} alt={p.title} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Image className="w-4 h-4 text-muted-foreground" />
@@ -433,7 +437,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                               bedrooms: p.bedrooms ?? undefined,
                               description: p.description,
                               features: p.features,
-                              image_url: p.image_url ?? "",
+                              images: (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : []),
+                              available_from: p.available_from ?? "",
                             }}
                             onSave={(form) => handleUpdate(p.id, form)}
                             trigger={<Button variant="ghost" size="icon" className="h-8 w-8"><Pencil className="w-3.5 h-3.5" /></Button>}
