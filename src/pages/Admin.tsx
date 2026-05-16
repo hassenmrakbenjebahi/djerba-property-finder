@@ -43,16 +43,38 @@ const emptyForm: PropertyForm = {
   available_from: "",
 };
 
-const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
+const AdminLogin = () => {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      onLogin();
-    } else {
-      setError(true);
+    if (!email || !password) return;
+    setLoading(true);
+    try {
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      } else {
+        if (password.length < 8) {
+          toast({ title: "Mot de passe trop court", description: "Minimum 8 caractères.", variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/admin` },
+        });
+        if (error) throw error;
+        toast({ title: "Compte créé", description: "Vous êtes maintenant connecté." });
+      }
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message || "Échec de l'authentification.", variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,16 +84,30 @@ const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
         <CardHeader className="text-center">
           <img src={logo} alt="El Mey Djerba Immo" className="h-16 w-16 mx-auto mb-2 object-contain" />
           <CardTitle className="font-heading text-xl">Espace Admin</CardTitle>
-          <p className="text-sm text-muted-foreground">El Mey Djerba Immo</p>
+          <p className="text-sm text-muted-foreground">
+            {mode === "signin" ? "Connectez-vous à votre compte" : "Créer le compte administrateur"}
+          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} placeholder="Entrez le mot de passe" />
-              {error && <p className="text-destructive text-xs mt-1">Mot de passe incorrect</p>}
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" required autoComplete="email" />
             </div>
-            <Button type="submit" className="w-full">Se connecter</Button>
+            <div>
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required autoComplete={mode === "signin" ? "current-password" : "new-password"} />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "signin" ? "Se connecter" : "Créer le compte"}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              className="text-xs text-muted-foreground hover:text-foreground w-full text-center"
+            >
+              {mode === "signin" ? "Pas encore de compte ? Créer le compte admin" : "Déjà un compte ? Se connecter"}
+            </button>
           </form>
         </CardContent>
       </Card>
