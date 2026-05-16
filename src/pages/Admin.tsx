@@ -42,6 +42,43 @@ const emptyForm: PropertyForm = {
   available_from: "",
 };
 
+const DJERBA_ZONES = [
+  "El Mey", "Houmt Souk", "Midoun", "Ajim", "Sedouikech", "Cedghiane",
+  "Mellita", "Aghir", "Mezraya", "Sidi Mahrez", "Sidi Jmour", "Guellala",
+  "Erriadh", "Mahboubine", "Hara Kebira", "Hara Sghira", "Zone Touristique",
+];
+
+const ZoneCombobox = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const [open, setOpen] = useState(false);
+  const filtered = DJERBA_ZONES.filter((z) =>
+    z.toLowerCase().includes(value.toLowerCase())
+  );
+  return (
+    <div className="relative">
+      <Input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Choisir ou écrire une zone"
+      />
+      {open && filtered.length > 0 && (
+        <ul className="absolute z-50 mt-1 w-full max-h-56 overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-md">
+          {filtered.map((z) => (
+            <li
+              key={z}
+              className="px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+              onMouseDown={(e) => { e.preventDefault(); onChange(z); setOpen(false); }}
+            >
+              {z}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
