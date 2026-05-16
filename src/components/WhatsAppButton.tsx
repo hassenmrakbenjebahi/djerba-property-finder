@@ -11,10 +11,10 @@ const WhatsAppButton = () => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
 
+  const text = `Bonjour, je suis ${name.trim() || "un visiteur"}.\n\n${message.trim()}`;
+  const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(text)}`;
+
   const handleSend = () => {
-    const text = `Bonjour, je suis ${name || "un visiteur"}.\n\n${message}`;
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
     setOpen(false);
     setName("");
     setMessage("");
