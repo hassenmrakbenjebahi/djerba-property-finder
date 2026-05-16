@@ -11,10 +11,10 @@ const WhatsAppButton = () => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
 
+  const text = `Bonjour, je suis ${name.trim() || "un visiteur"}.\n\n${message.trim()}`;
+  const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(text)}`;
+
   const handleSend = () => {
-    const text = `Bonjour, je suis ${name || "un visiteur"}.\n\n${message}`;
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
     setOpen(false);
     setName("");
     setMessage("");
@@ -76,11 +76,21 @@ const WhatsAppButton = () => {
               />
             </div>
             <Button
-              onClick={handleSend}
+              asChild
               disabled={!message.trim()}
               className="w-full rounded-xl h-11 bg-gradient-to-r from-primary to-primary/80 hover:opacity-95 text-primary-foreground font-medium shadow-md shadow-primary/20"
             >
-              <Send className="w-4 h-4 mr-2" /> Envoyer le message
+              <a
+                href={message.trim() ? waUrl : undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (!message.trim()) { e.preventDefault(); return; }
+                  handleSend();
+                }}
+              >
+                <Send className="w-4 h-4 mr-2" /> Envoyer le message
+              </a>
             </Button>
             <p className="text-[10px] text-center text-muted-foreground pt-1">
               Vous serez redirigé vers WhatsApp
