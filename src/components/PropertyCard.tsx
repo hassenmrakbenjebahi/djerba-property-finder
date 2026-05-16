@@ -66,9 +66,11 @@ const PropertyCard = ({ property, compact }: PropertyCardProps) => {
           <span className="bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
             {typeLabels[property.type] || property.type}
           </span>
-          <span className={`backdrop-blur-sm text-xs font-semibold px-3 py-1.5 rounded-full ${isRent ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>
-            {isRent ? "À louer" : "À vendre"}
-          </span>
+          {isRent && (
+            <span className="backdrop-blur-sm text-xs font-semibold px-3 py-1.5 rounded-full bg-accent text-accent-foreground">
+              À louer
+            </span>
+          )}
         </div>
 
         {/* Price on image */}
