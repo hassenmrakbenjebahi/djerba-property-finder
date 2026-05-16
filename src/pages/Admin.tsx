@@ -598,20 +598,35 @@ const AdminDashboard = ({ session, onLogout }: { session: Session; onLogout: () 
 };
 
 const Admin = () => {
-  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("admin-auth") === "true");
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogin = () => {
-    sessionStorage.setItem("admin-auth", "true");
-    setAuthenticated(true);
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("admin-auth");
-    setAuthenticated(false);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
-  if (!authenticated) return <AdminLogin onLogin={handleLogin} />;
-  return <AdminDashboard onLogout={handleLogout} />;
+  if (!session) return <AdminLogin />;
+  return <AdminDashboard session={session} onLogout={handleLogout} />;
 };
 
 export default Admin;
