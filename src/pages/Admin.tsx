@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useProperties, Property, formatPrice } from "@/context/PropertyContext";
-import type { TablesInsert } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,13 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X, Upload, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X, Upload, Loader2, KeyRound, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 import logo from "@/assets/logo.png";
-
-const ADMIN_PASSWORD = "admin123";
 
 type PropertyForm = {
   title: string;
