@@ -76,11 +76,21 @@ const WhatsAppButton = () => {
               />
             </div>
             <Button
-              onClick={handleSend}
+              asChild
               disabled={!message.trim()}
               className="w-full rounded-xl h-11 bg-gradient-to-r from-primary to-primary/80 hover:opacity-95 text-primary-foreground font-medium shadow-md shadow-primary/20"
             >
-              <Send className="w-4 h-4 mr-2" /> Envoyer le message
+              <a
+                href={message.trim() ? waUrl : undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (!message.trim()) { e.preventDefault(); return; }
+                  handleSend();
+                }}
+              >
+                <Send className="w-4 h-4 mr-2" /> Envoyer le message
+              </a>
             </Button>
             <p className="text-[10px] text-center text-muted-foreground pt-1">
               Vous serez redirigé vers WhatsApp
