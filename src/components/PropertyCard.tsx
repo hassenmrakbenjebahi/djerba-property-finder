@@ -6,6 +6,7 @@ import PropertyDetailDialog from "./PropertyDetailDialog";
 interface PropertyCardProps {
   property: Property;
   compact?: boolean;
+  variant?: "grid" | "list";
 }
 
 const typeLabels: Record<string, string> = {
@@ -15,7 +16,7 @@ const typeLabels: Record<string, string> = {
   maison: "Maison",
 };
 
-const PropertyCard = ({ property, compact }: PropertyCardProps) => {
+const PropertyCard = ({ property, compact, variant = "grid" }: PropertyCardProps) => {
   const [open, setOpen] = useState(false);
   const isRent = property.listing_type === "rent";
   const priceLabel = isRent ? `${formatPrice(property.price)} / mois` : formatPrice(property.price);
