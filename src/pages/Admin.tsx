@@ -289,14 +289,31 @@ const PropertyFormDialog = ({
             </div>
             <div>
               <Label>Zone *</Label>
-              <Select value={form.zone} onValueChange={(v) => setForm({ ...form, zone: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Midoun">Midoun</SelectItem>
-                  <SelectItem value="Houmt Souk">Houmt Souk</SelectItem>
-                  <SelectItem value="Ajim">Ajim</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                list="djerba-zones"
+                value={form.zone}
+                onChange={(e) => setForm({ ...form, zone: e.target.value })}
+                placeholder="Choisir ou écrire une zone"
+              />
+              <datalist id="djerba-zones">
+                <option value="El Mey" />
+                <option value="Houmt Souk" />
+                <option value="Midoun" />
+                <option value="Ajim" />
+                <option value="Sedouikech" />
+                <option value="Cedghiane" />
+                <option value="Mellita" />
+                <option value="Aghir" />
+                <option value="Mezraya" />
+                <option value="Sidi Mahrez" />
+                <option value="Sidi Jmour" />
+                <option value="Guellala" />
+                <option value="Erriadh" />
+                <option value="Mahboubine" />
+                <option value="Hara Kebira" />
+                <option value="Hara Sghira" />
+                <option value="Zone Touristique" />
+              </datalist>
             </div>
           </div>
           <div>
