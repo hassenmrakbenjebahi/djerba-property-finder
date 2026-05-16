@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useProperties, Property, formatPrice } from "@/context/PropertyContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,6 @@ import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import type { Session } from "@supabase/supabase-js";
 import logo from "@/assets/logo.png";
 
 type PropertyForm = {
@@ -43,39 +42,23 @@ const emptyForm: PropertyForm = {
   available_from: "",
 };
 
-const AdminLogin = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
+const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!password) return;
     setLoading(true);
-    try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        if (password.length < 8) {
-          toast({ title: "Mot de passe trop court", description: "Minimum 8 caractères.", variant: "destructive" });
-          setLoading(false);
-          return;
-        }
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
-        });
-        if (error) throw error;
-        toast({ title: "Compte créé", description: "Vous êtes maintenant connecté." });
-      }
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Échec de l'authentification.", variant: "destructive" });
-    } finally {
-      setLoading(false);
+    setError(false);
+    const { data, error: rpcError } = await supabase.rpc("verify_admin_password", { _password: password });
+    setLoading(false);
+    if (rpcError || !data) {
+      setError(true);
+      return;
     }
+    onLogin();
   };
 
   return (
@@ -84,34 +67,127 @@ const AdminLogin = () => {
         <CardHeader className="text-center">
           <img src={logo} alt="El Mey Djerba Immo" className="h-16 w-16 mx-auto mb-2 object-contain" />
           <CardTitle className="font-heading text-xl">Espace Admin</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {mode === "signin" ? "Connectez-vous à votre compte" : "Créer le compte administrateur"}
-          </p>
+          <p className="text-sm text-muted-foreground">El Mey Djerba Immo</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" required autoComplete="email" />
-            </div>
-            <div>
               <Label htmlFor="password">Mot de passe</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required autoComplete={mode === "signin" ? "current-password" : "new-password"} />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(false); }}
+                placeholder="Entrez le mot de passe"
+                autoComplete="current-password"
+              />
+              {error && <p className="text-destructive text-xs mt-1">Mot de passe incorrect</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "signin" ? "Se connecter" : "Créer le compte"}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Se connecter"}
             </Button>
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-xs text-muted-foreground hover:text-foreground w-full text-center"
-            >
-              {mode === "signin" ? "Pas encore de compte ? Créer le compte admin" : "Déjà un compte ? Se connecter"}
-            </button>
           </form>
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+const ProfileDialog = () => {
+  const [open, setOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const reset = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast({ title: "Mot de passe trop court", description: "Minimum 6 caractères.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Erreur", description: "Les mots de passe ne correspondent pas.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.rpc("change_admin_password", {
+      _old_password: oldPassword,
+      _new_password: newPassword,
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Mot de passe mis à jour", description: "Votre nouveau mot de passe est actif." });
+    reset();
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <User className="w-4 h-4 mr-1" /> Profil
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-heading flex items-center gap-2">
+            <KeyRound className="w-4 h-4" /> Changer le mot de passe
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <Label htmlFor="old-password">Mot de passe actuel</Label>
+            <Input
+              id="old-password"
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="new-password">Nouveau mot de passe</Label>
+            <Input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Minimum 6 caractères"
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="confirm-password">Confirmer le nouveau mot de passe</Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -316,93 +392,7 @@ const PropertyFormDialog = ({
   );
 };
 
-const ProfileDialog = ({ email }: { email: string }) => {
-  const [open, setOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 8) {
-      toast({ title: "Mot de passe trop court", description: "Minimum 8 caractères.", variant: "destructive" });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast({ title: "Erreur", description: "Les mots de passe ne correspondent pas.", variant: "destructive" });
-      return;
-    }
-    setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setSaving(false);
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Mot de passe mis à jour", description: "Votre nouveau mot de passe est actif." });
-    setNewPassword("");
-    setConfirmPassword("");
-    setOpen(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <User className="w-4 h-4 mr-1" /> Profil
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-heading flex items-center gap-2">
-            <KeyRound className="w-4 h-4" /> Mon profil
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="rounded-lg bg-muted/40 p-3">
-            <p className="text-xs text-muted-foreground">Connecté en tant que</p>
-            <p className="font-medium text-foreground text-sm break-all">{email}</p>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-3 pt-2 border-t border-border">
-            <p className="text-sm font-semibold text-foreground">Changer le mot de passe</p>
-            <div>
-              <Label htmlFor="new-password">Nouveau mot de passe</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Minimum 8 caractères"
-                autoComplete="new-password"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Retapez le nouveau mot de passe"
-                autoComplete="new-password"
-                required
-              />
-            </div>
-            <div className="flex gap-2 justify-end pt-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-              <Button type="submit" disabled={saving}>
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const AdminDashboard = ({ session, onLogout }: { session: Session; onLogout: () => void }) => {
+const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
   const { properties, addProperty, updateProperty, deleteProperty } = useProperties();
   const navigate = useNavigate();
 
@@ -480,7 +470,7 @@ const AdminDashboard = ({ session, onLogout }: { session: Session; onLogout: () 
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ProfileDialog email={session.user.email ?? ""} />
+            <ProfileDialog />
             <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
               <Home className="w-4 h-4 mr-1" /> Voir le site
             </Button>
@@ -598,35 +588,20 @@ const AdminDashboard = ({ session, onLogout }: { session: Session; onLogout: () 
 };
 
 const Admin = () => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("admin-auth") === "true");
 
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
+  const handleLogin = () => {
+    sessionStorage.setItem("admin-auth", "true");
+    setAuthenticated(true);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    sessionStorage.removeItem("admin-auth");
+    setAuthenticated(false);
+  };
 
-  if (!session) return <AdminLogin />;
-  return <AdminDashboard session={session} onLogout={handleLogout} />;
+  if (!authenticated) return <AdminLogin onLogin={handleLogin} />;
+  return <AdminDashboard onLogout={handleLogout} />;
 };
 
 export default Admin;

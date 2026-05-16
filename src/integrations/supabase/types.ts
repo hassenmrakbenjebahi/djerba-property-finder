@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_credentials: {
+        Row: {
+          id: boolean
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           available_from: string | null
@@ -68,42 +86,19 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
+      change_admin_password: {
+        Args: { _new_password: string; _old_password: string }
         Returns: boolean
       }
+      verify_admin_password: { Args: { _password: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -230,8 +225,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
+    Enums: {},
   },
 } as const
