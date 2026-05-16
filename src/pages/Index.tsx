@@ -2,7 +2,7 @@ import ChatBot from "@/components/ChatBot";
 import PropertyCard from "@/components/PropertyCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { useProperties, formatPrice } from "@/context/PropertyContext";
-import { MapPin, Phone, Mail, Home, Search, ArrowRight, Shield } from "lucide-react";
+import { MapPin, Phone, Mail, Home, Search, ArrowRight, Shield, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/djerba-hero.jpg";
@@ -15,6 +15,7 @@ const Index = () => {
   const { properties, loading } = useProperties();
   const [filterType, setFilterType] = useState<string>("all");
   const [listingFilter, setListingFilter] = useState<"all" | "sale" | "rent">("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const filteredProperties = properties.filter((p) => {
     if (filterType !== "all" && p.type !== filterType) return false;
