@@ -1,4 +1,5 @@
 import ChatBot from "@/components/ChatBot";
+import TestimonialsMarquee from "@/components/TestimonialsMarquee";
 import PropertyCard from "@/components/PropertyCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { useProperties, formatPrice } from "@/context/PropertyContext";
