@@ -1,8 +1,9 @@
 import ChatBot from "@/components/ChatBot";
+import TestimonialsMarquee from "@/components/TestimonialsMarquee";
 import PropertyCard from "@/components/PropertyCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { useProperties, formatPrice } from "@/context/PropertyContext";
-import { MapPin, Phone, Mail, Home, Search, ArrowRight, Shield, LayoutGrid, List } from "lucide-react";
+import { MapPin, Phone, Mail, Home, Search, ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/djerba-hero.jpg";
@@ -15,7 +16,6 @@ const Index = () => {
   const { properties, loading } = useProperties();
   const [filterType, setFilterType] = useState<string>("all");
   const [listingFilter, setListingFilter] = useState<"all" | "sale" | "rent">("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const filteredProperties = properties.filter((p) => {
     if (filterType !== "all" && p.type !== filterType) return false;
@@ -134,53 +134,22 @@ const Index = () => {
           ))}
         </div>
 
-        {/* View mode toggle */}
-        <div className="flex justify-end mb-6">
-          <div className="inline-flex bg-muted rounded-full p-1">
-            <button
-              onClick={() => setViewMode("grid")}
-              aria-label="Vue grille"
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                viewMode === "grid"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" /> Grille
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              aria-label="Vue liste"
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                viewMode === "list"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <List className="w-4 h-4" /> Liste
-            </button>
-          </div>
-        </div>
-
-        {/* Properties */}
+        {/* Grid */}
         {loading ? (
-          <div className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`bg-card rounded-2xl border border-border animate-pulse ${viewMode === "grid" ? "h-80" : "h-56"}`} />
+              <div key={i} className="bg-card rounded-2xl border border-border h-80 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div
-            key={viewMode}
-            className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}
-          >
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map((p, i) => (
               <div
                 key={p.id}
                 className="animate-fade-in opacity-0"
                 style={{ animationDelay: `${Math.min(i * 70, 600)}ms`, animationFillMode: "forwards" }}
               >
-                <PropertyCard property={p} variant={viewMode} />
+                <PropertyCard property={p} />
               </div>
             ))}
           </div>
@@ -189,6 +158,9 @@ const Index = () => {
           <p className="text-center text-muted-foreground py-8">Aucun bien trouvé pour cette catégorie.</p>
         )}
       </section>
+
+      {/* Testimonials marquee */}
+      <TestimonialsMarquee />
 
       {/* Chat Section */}
       <section id="assistant" className="bg-muted py-16">
