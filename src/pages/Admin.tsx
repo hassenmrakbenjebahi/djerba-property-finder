@@ -316,7 +316,93 @@ const PropertyFormDialog = ({
   );
 };
 
-const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
+const ProfileDialog = ({ email }: { email: string }) => {
+  const [open, setOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast({ title: "Mot de passe trop court", description: "Minimum 8 caractères.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Erreur", description: "Les mots de passe ne correspondent pas.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Mot de passe mis à jour", description: "Votre nouveau mot de passe est actif." });
+    setNewPassword("");
+    setConfirmPassword("");
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <User className="w-4 h-4 mr-1" /> Profil
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-heading flex items-center gap-2">
+            <KeyRound className="w-4 h-4" /> Mon profil
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="rounded-lg bg-muted/40 p-3">
+            <p className="text-xs text-muted-foreground">Connecté en tant que</p>
+            <p className="font-medium text-foreground text-sm break-all">{email}</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-3 pt-2 border-t border-border">
+            <p className="text-sm font-semibold text-foreground">Changer le mot de passe</p>
+            <div>
+              <Label htmlFor="new-password">Nouveau mot de passe</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Minimum 8 caractères"
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Retapez le nouveau mot de passe"
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const AdminDashboard = ({ session, onLogout }: { session: Session; onLogout: () => void }) => {
   const { properties, addProperty, updateProperty, deleteProperty } = useProperties();
   const navigate = useNavigate();
 
