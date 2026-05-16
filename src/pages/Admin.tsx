@@ -61,9 +61,9 @@ const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <img src={logo} alt="Immo Rêve Djerba" className="h-16 w-16 mx-auto mb-2 object-contain" />
+          <img src={logo} alt="El Mey Djerba Immo" className="h-16 w-16 mx-auto mb-2 object-contain" />
           <CardTitle className="font-heading text-xl">Espace Admin</CardTitle>
-          <p className="text-sm text-muted-foreground">Immo Rêve Djerba</p>
+          <p className="text-sm text-muted-foreground">El Mey Djerba Immo</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -344,7 +344,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Immo Rêve Djerba" className="h-8 w-8 object-contain" />
+            <img src={logo} alt="El Mey Djerba Immo" className="h-8 w-8 object-contain" />
             <div className="flex items-center gap-2">
               <LayoutDashboard className="w-4 h-4 text-primary" />
               <span className="font-heading font-semibold text-foreground">Admin</span>

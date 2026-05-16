@@ -88,7 +88,7 @@ function getBotResponse(input: string, allProperties: Property[]): { text: strin
 
   if (lower.includes("bonjour") || lower.includes("salut") || lower.includes("hello") || lower.includes("bonsoir")) {
     return {
-      text: "Bonjour et bienvenue chez **Immo Rêve Djerba** ! 🌴\n\nJe suis votre assistant immobilier. Comment puis-je vous aider ?",
+      text: "Bonjour et bienvenue chez **El Mey Djerba Immo** ! 🌴\n\nJe suis votre assistant immobilier. Comment puis-je vous aider ?",
     };
   }
 
@@ -109,7 +109,7 @@ const ChatBot = () => {
     {
       id: "welcome",
       role: "bot",
-      text: "Bienvenue chez **Immo Rêve Djerba** ! 🌴🏠\n\nJe suis votre assistant immobilier. Que recherchez-vous ?",
+      text: "Bienvenue chez **El Mey Djerba Immo** ! 🌴🏠\n\nJe suis votre assistant immobilier. Que recherchez-vous ?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -159,7 +159,7 @@ const ChatBot = () => {
           <Bot className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
-          <h3 className="font-semibold text-primary-foreground text-sm">Assistant Immo Rêve Djerba</h3>
+          <h3 className="font-semibold text-primary-foreground text-sm">Assistant El Mey Djerba Immo</h3>
           <p className="text-primary-foreground/70 text-xs">En ligne • Réponse instantanée</p>
         </div>
       </div>
