@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X, Upload, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
 
 const ADMIN_PASSWORD = "admin123";
@@ -92,26 +93,45 @@ const PropertyFormDialog = ({
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<PropertyForm>(initial || emptyForm);
   const [featuresText, setFeaturesText] = useState((initial?.features || []).join(", "));
-  const [newImage, setNewImage] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
       setForm(initial || emptyForm);
       setFeaturesText((initial?.features || []).join(", "));
-      setNewImage("");
     }
   };
 
-  const addImage = () => {
-    const url = newImage.trim();
-    if (!url) return;
-    if (form.images.length >= 10) {
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = 10 - form.images.length;
+    if (remaining <= 0) {
       toast({ title: "Limite atteinte", description: "10 images maximum par bien.", variant: "destructive" });
       return;
     }
-    setForm({ ...form, images: [...form.images, url] });
-    setNewImage("");
+    const list = Array.from(files).slice(0, remaining);
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of list) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error } = await supabase.storage.from("property-images").upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (error) throw error;
+        const { data } = supabase.storage.from("property-images").getPublicUrl(path);
+        uploaded.push(data.publicUrl);
+      }
+      setForm((f) => ({ ...f, images: [...f.images, ...uploaded] }));
+      toast({ title: "Upload réussi", description: `${uploaded.length} image(s) ajoutée(s).` });
+    } catch (e: any) {
+      toast({ title: "Erreur upload", description: e.message || "Échec de l'upload.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeImage = (i: number) => {
@@ -204,34 +224,23 @@ const PropertyFormDialog = ({
               <p className="text-xs text-muted-foreground mt-1">À partir de quand le bien est disponible à la location.</p>
             </div>
           )}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label>Prix (TND) *</Label>
-              <Input type="number" value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
-            </div>
-            <div>
-              <Label>Surface (m²) *</Label>
-              <Input type="number" value={form.surface || ""} onChange={(e) => setForm({ ...form, surface: Number(e.target.value) })} />
-            </div>
-            <div>
-              <Label>Chambres</Label>
-              <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
-            </div>
-          </div>
           <div>
             <Label>Images (max 10) — la 1ère est l'image de couverture</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newImage}
-                onChange={(e) => setNewImage(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addImage(); } }}
-                placeholder="https://..."
-                className="flex-1"
+            <label className="mt-1 flex items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:bg-muted/40 transition">
+              {uploading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Upload en cours...</>
+              ) : (
+                <><Upload className="w-4 h-4" /> <span className="text-sm">Choisir des images depuis votre appareil</span></>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={uploading || form.images.length >= 10}
+                onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
               />
-              <Button type="button" variant="outline" onClick={addImage} disabled={form.images.length >= 10}>
-                <Plus className="w-4 h-4 mr-1" /> Ajouter
-              </Button>
-            </div>
+            </label>
             {form.images.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {form.images.map((src, i) => (
