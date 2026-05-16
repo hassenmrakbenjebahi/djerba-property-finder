@@ -480,6 +480,7 @@ const AdminDashboard = ({ session, onLogout }: { session: Session; onLogout: () 
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ProfileDialog email={session.user.email ?? ""} />
             <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
               <Home className="w-4 h-4 mr-1" /> Voir le site
             </Button>
