@@ -289,31 +289,7 @@ const PropertyFormDialog = ({
             </div>
             <div>
               <Label>Zone *</Label>
-              <Input
-                list="djerba-zones"
-                value={form.zone}
-                onChange={(e) => setForm({ ...form, zone: e.target.value })}
-                placeholder="Choisir ou écrire une zone"
-              />
-              <datalist id="djerba-zones">
-                <option value="El Mey" />
-                <option value="Houmt Souk" />
-                <option value="Midoun" />
-                <option value="Ajim" />
-                <option value="Sedouikech" />
-                <option value="Cedghiane" />
-                <option value="Mellita" />
-                <option value="Aghir" />
-                <option value="Mezraya" />
-                <option value="Sidi Mahrez" />
-                <option value="Sidi Jmour" />
-                <option value="Guellala" />
-                <option value="Erriadh" />
-                <option value="Mahboubine" />
-                <option value="Hara Kebira" />
-                <option value="Hara Sghira" />
-                <option value="Zone Touristique" />
-              </datalist>
+              <ZoneCombobox value={form.zone} onChange={(v) => setForm({ ...form, zone: v })} />
             </div>
           </div>
           <div>
