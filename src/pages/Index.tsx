@@ -134,17 +134,54 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Grid */}
+        {/* View mode toggle */}
+        <div className="flex justify-end mb-6">
+          <div className="inline-flex bg-muted rounded-full p-1">
+            <button
+              onClick={() => setViewMode("grid")}
+              aria-label="Vue grille"
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+                viewMode === "grid"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" /> Grille
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              aria-label="Vue liste"
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+                viewMode === "list"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <List className="w-4 h-4" /> Liste
+            </button>
+          </div>
+        </div>
+
+        {/* Properties */}
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-card rounded-2xl border border-border h-80 animate-pulse" />
+              <div key={i} className={`bg-card rounded-2xl border border-border animate-pulse ${viewMode === "grid" ? "h-80" : "h-56"}`} />
             ))}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((p) => (
-              <PropertyCard key={p.id} property={p} />
+          <div
+            key={viewMode}
+            className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}
+          >
+            {filteredProperties.map((p, i) => (
+              <div
+                key={p.id}
+                className="animate-fade-in opacity-0"
+                style={{ animationDelay: `${Math.min(i * 70, 600)}ms`, animationFillMode: "forwards" }}
+              >
+                <PropertyCard property={p} variant={viewMode} />
+              </div>
             ))}
           </div>
         )}
