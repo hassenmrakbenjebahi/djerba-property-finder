@@ -219,7 +219,7 @@ const Index = () => {
               <Mail className="w-4 h-4 text-primary" /> errighioussema@gmail.com
             </span>
             <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" /> Houmt Souk, Djerba
+              <MapPin className="w-4 h-4 text-primary" /> El Mey, Djerba
             </span>
           </div>
         </div>
