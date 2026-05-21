@@ -36,7 +36,7 @@ const Index = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt={AGENCY_NAME} className="h-10 w-10 object-contain" />
+            <img src={logo} alt={AGENCY_NAME} className="h-11 w-11 rounded-full object-cover ring-2 ring-primary/30 ring-offset-2 ring-offset-background shadow-sm" />
             <div>
               <h1 className="font-heading text-lg font-bold text-foreground leading-tight">{AGENCY_NAME}</h1>
               <p className="text-xs text-muted-foreground">Votre agence à Djerba</p>
