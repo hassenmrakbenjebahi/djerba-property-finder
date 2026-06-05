@@ -10,7 +10,7 @@ import heroImage from "@/assets/djerba-hero.jpg";
 import logo from "@/assets/logo.png";
 import { useState } from "react";
 
-const AGENCY_NAME = "El Mey Djerba Immo";
+const AGENCY_NAME = "El May Djerba Immo";
 
 const Index = () => {
   const { properties, loading } = useProperties();

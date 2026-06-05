@@ -11,7 +11,7 @@ interface Testimonial {
 const TESTIMONIALS: Testimonial[] = [
   { name: "Sonia B.", location: "Tunis", rating: 5, initials: "SB", text: "Service exceptionnel ! J'ai trouvé ma villa de rêve à Midoun en seulement 2 semaines. Équipe très professionnelle." },
   { name: "Karim M.", location: "Djerba", rating: 5, initials: "KM", text: "Accompagnement parfait de A à Z. Ils connaissent vraiment l'île et m'ont guidé vers le meilleur quartier." },
-  { name: "Leila T.", location: "Sfax", rating: 5, initials: "LT", text: "Très réactifs sur WhatsApp, photos fidèles à la réalité. Je recommande vivement El Mey Djerba Immo !" },
+  { name: "Leila T.", location: "Sfax", rating: 5, initials: "LT", text: "Très réactifs sur WhatsApp, photos fidèles à la réalité. Je recommande vivement El May Djerba Immo !" },
   { name: "Mehdi K.", location: "France", rating: 5, initials: "MK", text: "Achat d'un terrain à distance, tout s'est passé sans souci. Confiance totale, équipe sérieuse." },
   { name: "Amel R.", location: "Houmt Souk", rating: 5, initials: "AR", text: "Location rapide d'un appartement vue mer. Prix juste et conseils précieux. Merci beaucoup !" },
   { name: "Yassine H.", location: "Allemagne", rating: 5, initials: "YH", text: "Agence sérieuse et transparente. Ils répondent à toutes les questions, même les plus pointues." },
