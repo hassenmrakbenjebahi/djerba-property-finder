@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { adminApi } from "@/lib/adminApi";
 
 
 export type Property = Tables<"properties">;
@@ -39,21 +40,18 @@ export const PropertyProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const addProperty = async (property: PropertyInsert) => {
-    const { error } = await supabase.from("properties").insert(property);
-    if (!error) await fetchProperties();
-    else throw error;
+    await adminApi.createProperty(property);
+    await fetchProperties();
   };
 
   const updateProperty = async (id: string, property: Partial<TablesUpdate<"properties">>) => {
-    const { error } = await supabase.from("properties").update(property).eq("id", id);
-    if (!error) await fetchProperties();
-    else throw error;
+    await adminApi.updateProperty(id, property);
+    await fetchProperties();
   };
 
   const deleteProperty = async (id: string) => {
-    const { error } = await supabase.from("properties").delete().eq("id", id);
-    if (!error) await fetchProperties();
-    else throw error;
+    await adminApi.deleteProperty(id);
+    await fetchProperties();
   };
 
   return (

@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, LogOut, Home, LayoutDashboard, Building, Image, X
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { adminApi, adminAuth } from "@/lib/adminApi";
 import logo from "@/assets/logo.png";
 
 type PropertyForm = {
@@ -89,12 +90,13 @@ const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
     if (!password) return;
     setLoading(true);
     setError(false);
-    const { data, error: rpcError } = await supabase.rpc("verify_admin_password", { _password: password });
+    const { data, error: fnError } = await adminApi.login(password);
     setLoading(false);
-    if (rpcError || !data) {
+    if (fnError || !(data as any)?.ok) {
       setError(true);
       return;
     }
+    adminAuth.setPassword(password);
     onLogin();
   };
 
@@ -154,15 +156,14 @@ const ProfileDialog = () => {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.rpc("change_admin_password", {
-      _old_password: oldPassword,
-      _new_password: newPassword,
-    });
+    const { data, error } = await adminApi.changePassword(oldPassword, newPassword);
     setSaving(false);
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    const payload = data as any;
+    if (error || !payload?.ok) {
+      toast({ title: "Erreur", description: payload?.error || error?.message || "Échec", variant: "destructive" });
       return;
     }
+    adminAuth.setPassword(newPassword);
     toast({ title: "Mot de passe mis à jour", description: "Votre nouveau mot de passe est actif." });
     reset();
     setOpen(false);
@@ -262,15 +263,8 @@ const PropertyFormDialog = ({
     try {
       const uploaded: string[] = [];
       for (const file of list) {
-        const ext = file.name.split(".").pop() || "jpg";
-        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error } = await supabase.storage.from("property-images").upload(path, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-        if (error) throw error;
-        const { data } = supabase.storage.from("property-images").getPublicUrl(path);
-        uploaded.push(data.publicUrl);
+        const { url } = await adminApi.uploadImage(file);
+        uploaded.push(url);
       }
       setForm((f) => ({ ...f, images: [...f.images, ...uploaded] }));
       toast({ title: "Upload réussi", description: `${uploaded.length} image(s) ajoutée(s).` });
@@ -627,6 +621,7 @@ const Admin = () => {
 
   const handleLogout = () => {
     sessionStorage.removeItem("admin-auth");
+    adminAuth.clear();
     setAuthenticated(false);
   };
 
