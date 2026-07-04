@@ -90,13 +90,12 @@ const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
     if (!password) return;
     setLoading(true);
     setError(false);
-    const { data, error: fnError } = await adminApi.login(password);
+    const result = await adminApi.login(password);
     setLoading(false);
-    if (fnError || !(data as any)?.ok) {
+    if (!result.ok) {
       setError(true);
       return;
     }
-    adminAuth.setPassword(password);
     onLogin();
   };
 
@@ -147,8 +146,8 @@ const ProfileDialog = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 6) {
-      toast({ title: "Mot de passe trop court", description: "Minimum 6 caractères.", variant: "destructive" });
+    if (newPassword.length < 12) {
+      toast({ title: "Mot de passe trop court", description: "Minimum 12 caractères.", variant: "destructive" });
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -156,14 +155,12 @@ const ProfileDialog = () => {
       return;
     }
     setSaving(true);
-    const { data, error } = await adminApi.changePassword(oldPassword, newPassword);
+    const result = await adminApi.changePassword(oldPassword, newPassword);
     setSaving(false);
-    const payload = data as any;
-    if (error || !payload?.ok) {
-      toast({ title: "Erreur", description: payload?.error || error?.message || "Échec", variant: "destructive" });
+    if (!result.ok) {
+      toast({ title: "Erreur", description: result.error || "Échec", variant: "destructive" });
       return;
     }
-    adminAuth.setPassword(newPassword);
     toast({ title: "Mot de passe mis à jour", description: "Votre nouveau mot de passe est actif." });
     reset();
     setOpen(false);
@@ -612,15 +609,14 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
 };
 
 const Admin = () => {
-  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("admin-auth") === "true");
+  // Auth state derives from the presence of a server-issued token — a stray
+  // sessionStorage flag can no longer unlock the dashboard because every
+  // admin action re-verifies the HMAC token server-side.
+  const [authenticated, setAuthenticated] = useState(() => adminAuth.isAuthenticated());
 
-  const handleLogin = () => {
-    sessionStorage.setItem("admin-auth", "true");
-    setAuthenticated(true);
-  };
+  const handleLogin = () => setAuthenticated(true);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("admin-auth");
     adminAuth.clear();
     setAuthenticated(false);
   };
