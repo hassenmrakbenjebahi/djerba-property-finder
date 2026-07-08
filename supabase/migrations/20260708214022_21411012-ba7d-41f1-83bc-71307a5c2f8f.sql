@@ -1,0 +1,1 @@
+UPDATE public.admin_credentials SET password_hash = crypt('Reset!Admin#2026Djerba', gen_salt('bf', 10)), updated_at = now() WHERE id = true;
