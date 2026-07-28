@@ -21,6 +21,8 @@ type PropertyForm = {
   zone: string;
   listing_type: "sale" | "rent";
   price: number;
+  price_monthly?: number | null;
+  price_nightly?: number | null;
   surface: number;
   bedrooms?: number;
   description: string;
@@ -35,6 +37,8 @@ const emptyForm: PropertyForm = {
   zone: "Midoun",
   listing_type: "sale",
   price: 0,
+  price_monthly: null,
+  price_nightly: null,
   surface: 0,
   bedrooms: undefined,
   description: "",
