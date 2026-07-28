@@ -44,6 +44,8 @@ export type Database = {
           images: string[]
           listing_type: string
           price: number
+          price_monthly: number | null
+          price_nightly: number | null
           surface: number
           title: string
           type: string
@@ -61,6 +63,8 @@ export type Database = {
           images?: string[]
           listing_type?: string
           price: number
+          price_monthly?: number | null
+          price_nightly?: number | null
           surface: number
           title: string
           type: string
@@ -78,6 +82,8 @@ export type Database = {
           images?: string[]
           listing_type?: string
           price?: number
+          price_monthly?: number | null
+          price_nightly?: number | null
           surface?: number
           title?: string
           type?: string
