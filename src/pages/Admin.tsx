@@ -639,6 +639,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                               zone: p.zone,
                               listing_type: (p.listing_type === "rent" ? "rent" : "sale"),
                               price: p.price,
+                              price_monthly: p.price_monthly ?? null,
+                              price_nightly: p.price_nightly ?? null,
                               surface: p.surface,
                               bedrooms: p.bedrooms ?? undefined,
                               description: p.description,
