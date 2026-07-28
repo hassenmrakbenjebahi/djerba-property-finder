@@ -21,10 +21,12 @@ import villa3 from "@/assets/properties/villa3.jpg";
 
 const now = new Date().toISOString();
 
-const make = (p: Omit<Property, "created_at" | "updated_at" | "images" | "available_from"> & { images?: string[]; available_from?: string | null }): Property => ({
+const make = (p: Omit<Property, "created_at" | "updated_at" | "images" | "available_from" | "price_monthly" | "price_nightly"> & { images?: string[]; available_from?: string | null; price_monthly?: number | null; price_nightly?: number | null }): Property => ({
   ...p,
   images: p.images && p.images.length ? p.images : (p.image_url ? [p.image_url] : []),
   available_from: p.available_from ?? null,
+  price_monthly: p.price_monthly ?? (p.listing_type === "rent" ? p.price : null),
+  price_nightly: p.price_nightly ?? null,
   created_at: now,
   updated_at: now,
 });

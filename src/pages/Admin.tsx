@@ -21,6 +21,8 @@ type PropertyForm = {
   zone: string;
   listing_type: "sale" | "rent";
   price: number;
+  price_monthly?: number | null;
+  price_nightly?: number | null;
   surface: number;
   bedrooms?: number;
   description: string;
@@ -35,6 +37,8 @@ const emptyForm: PropertyForm = {
   zone: "Midoun",
   listing_type: "sale",
   price: 0,
+  price_monthly: null,
+  price_nightly: null,
   surface: 0,
   bedrooms: undefined,
   description: "",
@@ -278,17 +282,38 @@ const PropertyFormDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.price || !form.surface) {
+    const isRent = form.listing_type === "rent";
+    const monthly = form.price_monthly ?? null;
+    const nightly = form.price_nightly ?? null;
+    if (!form.title || !form.surface) {
       toast({ title: "Erreur", description: "Veuillez remplir tous les champs obligatoires.", variant: "destructive" });
       return;
     }
-    if (form.listing_type === "rent" && !form.available_from) {
+    if (isRent) {
+      if (!monthly && !nightly) {
+        toast({ title: "Prix requis", description: "Indiquez au moins un prix : par mois ou par nuit.", variant: "destructive" });
+        return;
+      }
+    } else if (!form.price) {
+      toast({ title: "Erreur", description: "Veuillez indiquer le prix.", variant: "destructive" });
+      return;
+    }
+    if (isRent && !form.available_from) {
       toast({ title: "Date manquante", description: "Indiquez la date de début de disponibilité pour une location.", variant: "destructive" });
       return;
     }
-    onSave({ ...form, features: featuresText.split(",").map((f) => f.trim()).filter(Boolean) });
+    const price = isRent ? (monthly ?? nightly ?? 0) : form.price;
+    onSave({
+      ...form,
+      price,
+      price_monthly: isRent ? monthly : null,
+      price_nightly: isRent ? nightly : null,
+      features: featuresText.split(",").map((f) => f.trim()).filter(Boolean),
+    });
     setOpen(false);
   };
+
+  const isRent = form.listing_type === "rent";
 
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
@@ -326,25 +351,61 @@ const PropertyFormDialog = ({
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="sale">À vendre</SelectItem>
-                <SelectItem value="rent">À louer (prix / mois)</SelectItem>
+                <SelectItem value="rent">À louer</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label>Prix (TND) *</Label>
-              <Input type="number" value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+          {isRent ? (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Prix / mois (TND)</Label>
+                  <Input
+                    type="number"
+                    value={form.price_monthly ?? ""}
+                    onChange={(e) => setForm({ ...form, price_monthly: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="ex: 1500"
+                  />
+                </div>
+                <div>
+                  <Label>Prix / nuit (TND)</Label>
+                  <Input
+                    type="number"
+                    value={form.price_nightly ?? ""}
+                    onChange={(e) => setForm({ ...form, price_nightly: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="ex: 120"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">Renseignez au moins l'un des deux tarifs (mois ou nuit).</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Surface (m²) *</Label>
+                  <Input type="number" value={form.surface || ""} onChange={(e) => setForm({ ...form, surface: Number(e.target.value) })} />
+                </div>
+                <div>
+                  <Label>Chambres</Label>
+                  <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Prix (TND) *</Label>
+                <Input type="number" value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label>Surface (m²) *</Label>
+                <Input type="number" value={form.surface || ""} onChange={(e) => setForm({ ...form, surface: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label>Chambres</Label>
+                <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
+              </div>
             </div>
-            <div>
-              <Label>Surface (m²) *</Label>
-              <Input type="number" value={form.surface || ""} onChange={(e) => setForm({ ...form, surface: Number(e.target.value) })} />
-            </div>
-            <div>
-              <Label>Chambres</Label>
-              <Input type="number" value={form.bedrooms || ""} onChange={(e) => setForm({ ...form, bedrooms: e.target.value ? Number(e.target.value) : undefined })} />
-            </div>
-          </div>
-          {form.listing_type === "rent" && (
+          )}
+          {isRent && (
             <div>
               <Label>Date de début de disponibilité *</Label>
               <Input
@@ -432,6 +493,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         zone: form.zone,
         listing_type: form.listing_type,
         price: form.price,
+        price_monthly: form.price_monthly ?? null,
+        price_nightly: form.price_nightly ?? null,
         surface: form.surface,
         bedrooms: form.bedrooms || null,
         description: form.description,
@@ -454,6 +517,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
         zone: form.zone,
         listing_type: form.listing_type,
         price: form.price,
+        price_monthly: form.price_monthly ?? null,
+        price_nightly: form.price_nightly ?? null,
         surface: form.surface,
         bedrooms: form.bedrooms || null,
         description: form.description,
@@ -574,6 +639,8 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                               zone: p.zone,
                               listing_type: (p.listing_type === "rent" ? "rent" : "sale"),
                               price: p.price,
+                              price_monthly: p.price_monthly ?? null,
+                              price_nightly: p.price_nightly ?? null,
                               surface: p.surface,
                               bedrooms: p.bedrooms ?? undefined,
                               description: p.description,
