@@ -25,7 +25,14 @@ const PropertyDetailDialog = ({ property, open, onOpenChange }: Props) => {
   if (!property) return null;
 
   const isRent = property.listing_type === "rent";
-  const priceLabel = isRent ? `${formatPrice(property.price)} / mois` : formatPrice(property.price);
+  const monthly = property.price_monthly ?? (isRent ? property.price : null);
+  const nightly = property.price_nightly ?? null;
+  const rentParts: string[] = [];
+  if (monthly) rentParts.push(`${formatPrice(monthly)} / mois`);
+  if (nightly) rentParts.push(`${formatPrice(nightly)} / nuit`);
+  const priceLabel = isRent
+    ? (rentParts.length ? rentParts.join(" • ") : formatPrice(property.price))
+    : formatPrice(property.price);
   const gallery = (property.images && property.images.length > 0)
     ? property.images
     : (property.image_url ? [property.image_url] : []);
